@@ -46,6 +46,19 @@ html, body {
     "Apple SD Gothic Neo", "Malgun Gothic", Roboto, sans-serif;
   -webkit-tap-highlight-color: transparent;
   overscroll-behavior-y: contain;
+  /* The horizontal "wobble" some real Android browsers show even when
+     there's no actual overflow (scrollWidth === clientWidth) isn't page
+     scrolling at all — it's the browser's own edge-swipe / rubber-band
+     gesture (back-navigation swipe, elastic bounce) kicking in on any
+     sideways touch drag. overflow-x:hidden above only blocks true content
+     overflow, not that gesture, so it's reined in separately: pan-y limits
+     touch dragging to vertical only (elements that need their own
+     horizontal/free-form dragging — the reorder handle, the color-picker
+     pad and hue slider — already set touch-action:none directly on
+     themselves, which still wins there), and overscroll-behavior-x:none
+     turns off the sideways bounce/navigation gesture outright. */
+  touch-action: pan-y;
+  overscroll-behavior-x: none;
 }
 
 body {
