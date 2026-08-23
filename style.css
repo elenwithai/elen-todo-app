@@ -22,9 +22,24 @@
 
 * { box-sizing: border-box; }
 
+html {
+  /* Some mobile browsers (notably Samsung Internet / Chrome on Android)
+     auto-"boost" font sizes in narrow columns to improve readability,
+     which can quietly make a row wider than the screen even though
+     nothing looks wrong when previewed on desktop. Locking the text
+     size adjustment to 100% stops that from happening. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* Safety net: never allow the page itself to scroll sideways, only up
+     and down. Set on html (not body) so sticky headers keep working. */
+  overflow-x: hidden;
+}
+
 html, body {
   margin: 0;
   padding: 0;
+  width: 100%;
+  max-width: 100%;
   background: var(--bg);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Pretendard",
@@ -48,7 +63,7 @@ button {
   top: 0;
   z-index: 20;
   background: var(--bg);
-  padding: calc(14px + var(--safe-top)) 16px 8px;
+  padding: calc(6px + var(--safe-top)) 16px 4px;
 }
 
 .header-row {
@@ -59,12 +74,21 @@ button {
 }
 
 .app-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   font-size: 20px;
   font-weight: 800;
   margin: 0;
   letter-spacing: -0.02em;
   white-space: nowrap;
   flex-shrink: 0;
+}
+.app-title .title-icon {
+  width: 21px;
+  height: 21px;
+  flex-shrink: 0;
+  stroke: var(--accent);
 }
 
 /* ---- daily quote: inline marquee next to the title ---- */
@@ -112,6 +136,7 @@ button {
 }
 
 .icon-btn:active { transform: scale(0.94); }
+.icon-btn svg { width: 20px; height: 20px; }
 
 .header-actions {
   display: flex;
@@ -126,7 +151,7 @@ button {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow);
   padding: 6px;
-  margin-top: 12px;
+  margin-top: 6px;
 }
 
 .week-nav .week-label {
@@ -171,7 +196,7 @@ button {
 }
 
 main {
-  padding: 8px 16px 20px;
+  padding: 2px 13px 20px;
   max-width: 640px;
   margin: 0 auto;
 }
@@ -180,7 +205,7 @@ main {
   font-size: 12.5px;
   font-weight: 700;
   color: var(--text-dim);
-  margin: 18px 4px 8px;
+  margin: 10px 4px 6px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -214,9 +239,9 @@ main {
   background: var(--card-bg);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
-  padding: 12px 12px 12px 6px;
+  padding: 10px 8px 10px 4px;
   display: flex;
-  gap: 6px;
+  gap: 3px;
   align-items: flex-start;
   position: relative;
   transition: box-shadow 0.15s, transform 0.15s;
@@ -234,22 +259,22 @@ main {
 }
 
 .drag-handle {
-  width: 26px;
-  min-width: 26px;
+  width: 20px;
+  min-width: 20px;
   height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #c7c9d6;
-  font-size: 16px;
+  font-size: 15px;
   cursor: grab;
   touch-action: none;
   user-select: none;
 }
 
 .todo-num {
-  min-width: 20px;
-  font-size: 12px;
+  min-width: 14px;
+  font-size: 11.5px;
   font-weight: 700;
   color: var(--text-dim);
   padding-top: 11px;
@@ -257,9 +282,9 @@ main {
 }
 
 .todo-check {
-  width: 24px;
-  height: 24px;
-  min-width: 24px;
+  width: 23px;
+  height: 23px;
+  min-width: 23px;
   border-radius: 50%;
   border: 2px solid var(--border);
   background: var(--card-bg);
@@ -289,13 +314,13 @@ main {
 .todo-tags-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .todo-tags-left {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-wrap: wrap;
   min-width: 0;
   flex: 1;
@@ -304,7 +329,7 @@ main {
 .todo-tags-right {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   flex-shrink: 0;
   margin-left: auto;
 }
@@ -312,20 +337,18 @@ main {
 .tag-select {
   appearance: none;
   border: none;
-  border-radius: 8px;
-  font-size: 11.5px;
+  border-radius: 7px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 4px 8px;
+  padding: 3px 6px;
   cursor: pointer;
-  background-repeat: no-repeat;
-  background-position: right 5px center;
-  background-size: 8px;
-  padding-right: 18px;
   /* No max-width: the box follows its own content (native <select> sizing
      already matches the widest option in that category/priority list), so
      a long name gets more room and short names all share one compact,
-     consistent width — never smaller than min-width below. */
-  min-width: 44px;
+     consistent width — never smaller than min-width below. The old right-
+     side arrow padding was removed — appearance:none already hides the
+     native arrow, so that space was just dead room pushing rows to wrap. */
+  min-width: 36px;
   width: auto;
 }
 
@@ -368,12 +391,12 @@ main {
   position: relative;
   display: inline-flex;
   align-items: center;
-  height: 24px;
-  padding: 0 2px;
+  height: 23px;
+  padding: 0 1px;
 }
 
 .due-text {
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--text-dim);
   white-space: nowrap;
@@ -403,10 +426,10 @@ main {
   border: none;
   background: none;
   color: #c7c9d6;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
-  padding: 4px 0 4px 4px;
+  padding: 4px 1px 4px 2px;
   white-space: nowrap;
   border-radius: 6px;
   transition: background-color 0.15s, color 0.15s;
@@ -575,13 +598,15 @@ main {
 .chip-row:last-child { border-bottom: none; }
 
 .chip-color {
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  border: none;
+  border: 1px solid var(--border);
   padding: 0;
   flex-shrink: 0;
+  cursor: pointer;
 }
+.chip-color:active { transform: scale(0.92); }
 
 .chip-row input[type="text"] {
   flex: 1;
@@ -602,7 +627,84 @@ main {
   font-size: 15px;
   cursor: pointer;
   padding: 4px 6px;
+  border-radius: 6px;
+  transition: color 0.15s, background-color 0.15s;
 }
+.chip-remove.blocked {
+  color: white;
+  background: var(--danger);
+}
+
+/* ---- custom color picker: single tap-to-pick pad instead of separate H/S/V ---- */
+.color-picker-sheet .sv-square {
+  position: relative;
+  width: 100%;
+  height: 170px;
+  border-radius: 14px;
+  margin-bottom: 16px;
+  touch-action: none;
+  cursor: pointer;
+  background-image:
+    linear-gradient(to top, #000, rgba(0, 0, 0, 0)),
+    linear-gradient(to right, #fff, rgba(255, 255, 255, 0));
+}
+.sv-cursor {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2.5px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 1px 5px rgba(0, 0, 0, 0.35);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.hue-slider {
+  position: relative;
+  width: 100%;
+  height: 22px;
+  border-radius: 11px;
+  margin-bottom: 18px;
+  touch-action: none;
+  cursor: pointer;
+  background: linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00);
+}
+.hue-thumb {
+  position: absolute;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2.5px solid #fff;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 1px 5px rgba(0, 0, 0, 0.35);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.color-picker-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.color-preview-swatch {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  flex-shrink: 0;
+  border: 1px solid var(--border);
+}
+.hex-input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 11px;
+  font-size: 14.5px;
+  font-family: inherit;
+  background: var(--bg);
+  color: var(--text);
+  text-transform: uppercase;
+  min-width: 0;
+}
+.hex-input:focus { outline: none; border-color: var(--accent); }
 
 .add-chip-btn {
   width: 100%;
@@ -638,7 +740,7 @@ main {
   background: var(--border);
   border-radius: 4px;
   overflow: hidden;
-  margin-top: 10px;
+  margin-top: 6px;
 }
 .progress-bar-fill {
   height: 100%;
@@ -650,7 +752,7 @@ main {
 .progress-label {
   font-size: 11.5px;
   color: var(--text-dim);
-  margin-top: 6px;
+  margin-top: 3px;
   text-align: right;
 }
 
@@ -738,7 +840,8 @@ main {
 }
 
 .bottom-nav a.active { color: var(--accent-dark); }
-.bottom-nav .nav-icon { font-size: 19px; }
+.bottom-nav .nav-icon { display: flex; align-items: center; justify-content: center; }
+.bottom-nav .nav-icon svg { width: 19px; height: 19px; }
 
 @media (min-width: 480px) {
   .app-title { font-size: 22px; }
@@ -752,7 +855,7 @@ main {
   box-shadow: var(--shadow);
   padding: 4px;
   border-radius: 12px;
-  margin-top: 12px;
+  margin-top: 6px;
 }
 .sub-tab {
   flex: 1;
@@ -775,8 +878,8 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 14px;
-  padding: 2px 2px;
+  margin-top: 4px;
+  padding: 0 2px;
 }
 .filter-check-label {
   display: flex;

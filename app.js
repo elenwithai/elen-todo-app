@@ -521,17 +521,199 @@
     });
   });
 
+  // ---------- custom color picker: single tap-to-pick SV pad + hue bar ----------
+  // Replaces the native <input type="color">, which forces separate H/S/V
+  // controls on most platforms — a single 2D pad + hue slider is far easier
+  // to use with a thumb. Built once and reused (pointer listeners live on
+  // `window`, matching the drag-reorder pattern above, so nothing breaks if
+  // the pad's own elements get re-rendered mid-drag).
+  function hexToRgb(hex) {
+    hex = (hex || "#000000").replace("#", "");
+    if (hex.length === 3) hex = hex.split("").map((c) => c + c).join("");
+    const num = parseInt(hex, 16) || 0;
+    return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+  }
+  function rgbToHex(r, g, b) {
+    const c = (n) => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, "0");
+    return "#" + c(r) + c(g) + c(b);
+  }
+  function rgbToHsv(r, g, b) {
+    r /= 255; g /= 255; b /= 255;
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    const d = max - min;
+    let h = 0;
+    if (d !== 0) {
+      if (max === r) h = ((g - b) / d) % 6;
+      else if (max === g) h = (b - r) / d + 2;
+      else h = (r - g) / d + 4;
+      h *= 60;
+      if (h < 0) h += 360;
+    }
+    const s = max === 0 ? 0 : d / max;
+    const v = max;
+    return { h, s, v };
+  }
+  function hsvToRgb(h, s, v) {
+    const c = v * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = v - c;
+    let r = 0, g = 0, b = 0;
+    if (h < 60) { r = c; g = x; b = 0; }
+    else if (h < 120) { r = x; g = c; b = 0; }
+    else if (h < 180) { r = 0; g = c; b = x; }
+    else if (h < 240) { r = 0; g = x; b = c; }
+    else if (h < 300) { r = x; g = 0; b = c; }
+    else { r = c; g = 0; b = x; }
+    return { r: (r + m) * 255, g: (g + m) * 255, b: (b + m) * 255 };
+  }
+
+  let colorPickerApi = null;
+  function buildColorPicker() {
+    if (colorPickerApi) return colorPickerApi;
+    const overlay = document.createElement("div");
+    overlay.className = "sheet-overlay color-picker-overlay";
+    overlay.style.zIndex = "60";
+    const sheet = document.createElement("div");
+    sheet.className = "sheet color-picker-sheet";
+    sheet.innerHTML =
+      '<div class="sheet-handle"></div>' +
+      "<h2>색상 선택</h2>" +
+      '<div class="sv-square"><div class="sv-cursor"></div></div>' +
+      '<div class="hue-slider"><div class="hue-thumb"></div></div>' +
+      '<div class="color-picker-row">' +
+      '<span class="color-preview-swatch"></span>' +
+      '<input type="text" class="hex-input" maxlength="7" />' +
+      "</div>" +
+      '<div class="sheet-actions">' +
+      '<button type="button" class="btn btn-secondary" data-act="cancel">취소</button>' +
+      '<button type="button" class="btn btn-primary" data-act="ok">확인</button>' +
+      "</div>";
+    overlay.appendChild(sheet);
+    document.body.appendChild(overlay);
+
+    const svSquare = sheet.querySelector(".sv-square");
+    const svCursor = sheet.querySelector(".sv-cursor");
+    const hueSlider = sheet.querySelector(".hue-slider");
+    const hueThumb = sheet.querySelector(".hue-thumb");
+    const hexInput = sheet.querySelector(".hex-input");
+    const swatch = sheet.querySelector(".color-preview-swatch");
+
+    let hsv = { h: 0, s: 1, v: 1 };
+    let onConfirm = null;
+
+    function currentHex() {
+      const rgb = hsvToRgb(hsv.h, hsv.s, hsv.v);
+      return rgbToHex(rgb.r, rgb.g, rgb.b);
+    }
+
+    function updateUI() {
+      const hex = currentHex();
+      svSquare.style.backgroundColor = "hsl(" + hsv.h + ",100%,50%)";
+      svCursor.style.left = hsv.s * svSquare.clientWidth + "px";
+      svCursor.style.top = (1 - hsv.v) * svSquare.clientHeight + "px";
+      hueThumb.style.left = (hsv.h / 360) * hueSlider.clientWidth + "px";
+      swatch.style.backgroundColor = hex;
+      hexInput.value = hex;
+    }
+
+    function setFromSv(clientX, clientY) {
+      const rect = svSquare.getBoundingClientRect();
+      let x = rect.width === 0 ? 0 : (clientX - rect.left) / rect.width;
+      let y = rect.height === 0 ? 0 : (clientY - rect.top) / rect.height;
+      hsv.s = Math.max(0, Math.min(1, x));
+      hsv.v = 1 - Math.max(0, Math.min(1, y));
+      updateUI();
+    }
+
+    function setFromHue(clientX) {
+      const rect = hueSlider.getBoundingClientRect();
+      let x = rect.width === 0 ? 0 : (clientX - rect.left) / rect.width;
+      hsv.h = Math.max(0, Math.min(1, x)) * 360;
+      updateUI();
+    }
+
+    svSquare.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      setFromSv(e.clientX, e.clientY);
+      const onMove = (ev) => setFromSv(ev.clientX, ev.clientY);
+      const onUp = () => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onUp);
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
+    });
+
+    hueSlider.addEventListener("pointerdown", (e) => {
+      e.preventDefault();
+      setFromHue(e.clientX);
+      const onMove = (ev) => setFromHue(ev.clientX);
+      const onUp = () => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onUp);
+      };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
+    });
+
+    hexInput.addEventListener("input", () => {
+      let v = hexInput.value.trim();
+      if (/^#?[0-9a-fA-F]{6}$/.test(v)) {
+        if (v[0] !== "#") v = "#" + v;
+        const rgb = hexToRgb(v);
+        hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+        updateUI();
+      }
+    });
+
+    function close() {
+      overlay.classList.remove("open");
+    }
+
+    sheet.querySelector('[data-act="cancel"]').addEventListener("click", close);
+    sheet.querySelector('[data-act="ok"]').addEventListener("click", () => {
+      if (onConfirm) onConfirm(currentHex());
+      close();
+    });
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) close();
+    });
+
+    colorPickerApi = {
+      open(initialHex, cb) {
+        const rgb = hexToRgb(initialHex);
+        hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
+        onConfirm = cb;
+        overlay.classList.add("open");
+        requestAnimationFrame(updateUI);
+      },
+    };
+    return colorPickerApi;
+  }
+
+  function openColorPicker(initialHex, onConfirm) {
+    buildColorPicker().open(initialHex, onConfirm);
+  }
+
   function buildChipRow(item, kind) {
     const row = document.createElement("div");
     row.className = "chip-row";
 
-    const colorInput = document.createElement("input");
-    colorInput.type = "color";
-    colorInput.className = "chip-color";
-    colorInput.value = item.color;
-    colorInput.addEventListener("input", () => {
-      item.color = colorInput.value;
-      persistChips();
+    const colorSwatch = document.createElement("button");
+    colorSwatch.type = "button";
+    colorSwatch.className = "chip-color";
+    colorSwatch.style.backgroundColor = item.color;
+    colorSwatch.setAttribute("aria-label", "색상 선택");
+    colorSwatch.addEventListener("click", () => {
+      openColorPicker(item.color, (newColor) => {
+        item.color = newColor;
+        colorSwatch.style.backgroundColor = newColor;
+        persistChips();
+      });
     });
 
     const nameInput = document.createElement("input");
@@ -546,10 +728,17 @@
     const removeBtn = document.createElement("button");
     removeBtn.className = "chip-remove";
     removeBtn.innerHTML = "✕";
+    let removeBlockTimer = null;
     removeBtn.addEventListener("click", () => {
       const list = kind === "cat" ? currentCats : currentPris;
       if (list.length <= 1) {
-        alert("최소 1개는 남아있어야 해요.");
+        clearTimeout(removeBlockTimer);
+        removeBtn.classList.add("blocked");
+        removeBtn.innerHTML = "1개 필요";
+        removeBlockTimer = setTimeout(() => {
+          removeBtn.classList.remove("blocked");
+          removeBtn.innerHTML = "✕";
+        }, 1600);
         return;
       }
       const idx = list.indexOf(item);
@@ -559,7 +748,7 @@
       renderSettingsChips();
     });
 
-    row.appendChild(colorInput);
+    row.appendChild(colorSwatch);
     row.appendChild(nameInput);
     row.appendChild(removeBtn);
     return row;
