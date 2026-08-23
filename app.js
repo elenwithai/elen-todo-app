@@ -13,6 +13,36 @@
   let unscheduledOpen = false;
   let currentListView = "week"; // "week" | "all"
 
+  // ---------- shared overlay open/close + background scroll lock ----------
+  // Locks the page in place while any bottom sheet is open, so a long
+  // category/priority list (or the color picker, opened from inside the
+  // settings sheet) scrolls only within its own sheet — the list behind it
+  // can never "leak" scroll or jump position underneath. A counter (not a
+  // boolean) means a nested overlay closing doesn't unlock the background
+  // while an outer one is still open.
+  let overlayLockCount = 0;
+  let overlayScrollY = 0;
+  function openOverlay(el) {
+    if (!el) return;
+    if (overlayLockCount === 0) {
+      overlayScrollY = window.scrollY || document.documentElement.scrollTop || 0;
+      document.body.style.top = -overlayScrollY + "px";
+      document.body.classList.add("scroll-locked");
+    }
+    overlayLockCount++;
+    el.classList.add("open");
+  }
+  function closeOverlay(el) {
+    if (!el) return;
+    el.classList.remove("open");
+    overlayLockCount = Math.max(0, overlayLockCount - 1);
+    if (overlayLockCount === 0) {
+      document.body.classList.remove("scroll-locked");
+      document.body.style.top = "";
+      window.scrollTo(0, overlayScrollY);
+    }
+  }
+
   // ---------- element refs ----------
   const weekLabelEl = document.getElementById("weekLabel");
   const weekListEl = document.getElementById("weekList");
@@ -465,15 +495,15 @@
     populateFormSelects();
     formDetail.value = "";
     formDue.value = isoDate(refDate.getTime ? refDate : new Date());
-    addSheetOverlay.classList.add("open");
+    openOverlay(addSheetOverlay);
     setTimeout(() => formDetail.focus(), 150);
   });
 
   document.getElementById("addCancelBtn").addEventListener("click", () => {
-    addSheetOverlay.classList.remove("open");
+    closeOverlay(addSheetOverlay);
   });
   addSheetOverlay.addEventListener("click", (e) => {
-    if (e.target === addSheetOverlay) addSheetOverlay.classList.remove("open");
+    if (e.target === addSheetOverlay) closeOverlay(addSheetOverlay);
   });
 
   document.getElementById("addSaveBtn").addEventListener("click", () => {
@@ -488,7 +518,7 @@
       detail: detail,
       due: formDue.value || "",
     });
-    addSheetOverlay.classList.remove("open");
+    closeOverlay(addSheetOverlay);
     refresh();
   });
 
@@ -499,15 +529,15 @@
 
   document.getElementById("settingsBtn").addEventListener("click", () => {
     renderSettingsChips();
-    settingsSheetOverlay.classList.add("open");
+    openOverlay(settingsSheetOverlay);
   });
   document.getElementById("settingsDoneBtn").addEventListener("click", () => {
-    settingsSheetOverlay.classList.remove("open");
+    closeOverlay(settingsSheetOverlay);
     refresh();
   });
   settingsSheetOverlay.addEventListener("click", (e) => {
     if (e.target === settingsSheetOverlay) {
-      settingsSheetOverlay.classList.remove("open");
+      closeOverlay(settingsSheetOverlay);
       refresh();
     }
   });
@@ -576,13 +606,17 @@
     const sheet = document.createElement("div");
     sheet.className = "sheet color-picker-sheet";
     sheet.innerHTML =
+      '<div class="sheet-header">' +
       '<div class="sheet-handle"></div>' +
       "<h2>색상 선택</h2>" +
+      "</div>" +
+      '<div class="sheet-body">' +
       '<div class="sv-square"><div class="sv-cursor"></div></div>' +
       '<div class="hue-slider"><div class="hue-thumb"></div></div>' +
       '<div class="color-picker-row">' +
       '<span class="color-preview-swatch"></span>' +
       '<input type="text" class="hex-input" maxlength="7" />' +
+      "</div>" +
       "</div>" +
       '<div class="sheet-actions">' +
       '<button type="button" class="btn btn-secondary" data-act="cancel">취소</button>' +
@@ -671,7 +705,7 @@
     });
 
     function close() {
-      overlay.classList.remove("open");
+      closeOverlay(overlay);
     }
 
     sheet.querySelector('[data-act="cancel"]').addEventListener("click", close);
@@ -688,7 +722,7 @@
         const rgb = hexToRgb(initialHex);
         hsv = rgbToHsv(rgb.r, rgb.g, rgb.b);
         onConfirm = cb;
-        overlay.classList.add("open");
+        openOverlay(overlay);
         requestAnimationFrame(updateUI);
       },
     };

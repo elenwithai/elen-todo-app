@@ -97,23 +97,27 @@
 <!-- Add / Edit sheet -->
 <div class="sheet-overlay" id="addSheetOverlay">
   <div class="sheet">
-    <div class="sheet-handle"></div>
-    <h2 id="addSheetTitle">할일 추가</h2>
-    <div class="field-group">
-      <label>카테고리</label>
-      <select id="formCategory"></select>
+    <div class="sheet-header">
+      <div class="sheet-handle"></div>
+      <h2 id="addSheetTitle">할일 추가</h2>
     </div>
-    <div class="field-group">
-      <label>중요도</label>
-      <select id="formPriority"></select>
-    </div>
-    <div class="field-group">
-      <label>상세내용</label>
-      <textarea id="formDetail" placeholder="할일을 입력하세요"></textarea>
-    </div>
-    <div class="field-group">
-      <label>기한</label>
-      <input type="date" id="formDue" />
+    <div class="sheet-body">
+      <div class="field-group">
+        <label>카테고리</label>
+        <select id="formCategory"></select>
+      </div>
+      <div class="field-group">
+        <label>중요도</label>
+        <select id="formPriority"></select>
+      </div>
+      <div class="field-group">
+        <label>상세내용</label>
+        <textarea id="formDetail" placeholder="할일을 입력하세요"></textarea>
+      </div>
+      <div class="field-group">
+        <label>기한</label>
+        <input type="date" id="formDue" />
+      </div>
     </div>
     <div class="sheet-actions">
       <button class="btn btn-secondary" id="addCancelBtn">취소</button>
@@ -125,21 +129,25 @@
 <!-- Settings sheet -->
 <div class="sheet-overlay" id="settingsSheetOverlay">
   <div class="sheet">
-    <div class="sheet-handle"></div>
-    <h2>카테고리 · 중요도 설정</h2>
-    <div class="settings-tabs">
-      <button class="settings-tab active" data-tab="cat">카테고리</button>
-      <button class="settings-tab" data-tab="pri">중요도</button>
+    <div class="sheet-header">
+      <div class="sheet-handle"></div>
+      <h2>카테고리 · 중요도 설정</h2>
+      <div class="settings-tabs">
+        <button class="settings-tab active" data-tab="cat">카테고리</button>
+        <button class="settings-tab" data-tab="pri">중요도</button>
+      </div>
     </div>
-    <div class="settings-panel active" id="catPanel">
-      <div id="catChipList"></div>
-      <button class="add-chip-btn" id="addCatBtn">+ 카테고리 추가</button>
+    <div class="sheet-body">
+      <div class="settings-panel active" id="catPanel">
+        <div id="catChipList"></div>
+        <button class="add-chip-btn" id="addCatBtn">+ 카테고리 추가</button>
+      </div>
+      <div class="settings-panel" id="priPanel">
+        <div id="priChipList"></div>
+        <button class="add-chip-btn" id="addPriBtn">+ 중요도 추가</button>
+      </div>
     </div>
-    <div class="settings-panel" id="priPanel">
-      <div id="priChipList"></div>
-      <button class="add-chip-btn" id="addPriBtn">+ 중요도 추가</button>
-    </div>
-    <div class="sheet-actions" style="margin-top:16px;">
+    <div class="sheet-actions">
       <button class="btn btn-primary" id="settingsDoneBtn">완료</button>
     </div>
   </div>

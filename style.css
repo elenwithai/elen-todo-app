@@ -67,6 +67,19 @@ body {
   padding-bottom: calc(84px + var(--safe-bottom));
 }
 
+/* Applied by JS while any bottom sheet is open: pins the background page at
+   its current scroll position (via an inline `top` offset set alongside
+   this class) so it can't scroll or jump underneath the sheet — the sheet's
+   own body is what scrolls instead. Removed, with the scroll position
+   restored, when the last open sheet closes. */
+body.scroll-locked {
+  position: fixed;
+  left: 0;
+  right: 0;
+  width: 100%;
+  overflow: hidden;
+}
+
 button {
   font-family: inherit;
 }
@@ -355,14 +368,25 @@ main {
   font-weight: 700;
   padding: 3px 6px;
   cursor: pointer;
-  /* No max-width: the box follows its own content (native <select> sizing
-     already matches the widest option in that category/priority list), so
-     a long name gets more room and short names all share one compact,
+  /* The box follows its own content (native <select> sizing already
+     matches the widest option in that category/priority list), so a
+     longer name gets more room and short names all share one compact,
      consistent width — never smaller than min-width below. The old right-
      side arrow padding was removed — appearance:none already hides the
-     native arrow, so that space was just dead room pushing rows to wrap. */
+     native arrow, so that space was just dead room pushing rows to wrap.
+     max-width IS capped though: a user-typed category/priority name has
+     no length limit, and without a ceiling here a long enough one would
+     make the select itself wider than the phone screen — no amount of
+     flex-wrap on the row helps at that point, since wrapping only moves
+     whole items to a new line, it can't shrink one item past its own
+     content width. Past the cap, the name truncates with an ellipsis
+     instead of pushing the page wider. */
   min-width: 36px;
   width: auto;
+  max-width: min(150px, 38vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cat-select {
@@ -490,14 +514,22 @@ main {
 }
 .sheet-overlay.open { display: flex; }
 
+/* Sheet = fixed header + scrolling body + fixed footer, so a long
+   category/priority list (or a small phone / keyboard eating half the
+   screen) never pushes the save/done button off-screen — only the middle
+   section scrolls, the header and action buttons stay put and reachable.
+   Height is capped to dvh (dynamic viewport height), which — unlike vh on
+   mobile — already accounts for the browser's address bar, so the sheet
+   never gets taller than what's actually visible. */
 .sheet {
   background: var(--card-bg);
   width: 100%;
   max-width: 640px;
   border-radius: 22px 22px 0 0;
-  padding: 10px 18px calc(22px + var(--safe-bottom));
-  max-height: 88vh;
-  overflow-y: auto;
+  max-height: 90vh;
+  max-height: 90dvh;
+  display: flex;
+  flex-direction: column;
   animation: sheet-up 0.22s ease-out;
 }
 
@@ -514,9 +546,22 @@ main {
   margin: 8px auto 14px;
 }
 
-.sheet h2 {
+.sheet-header {
+  flex-shrink: 0;
+  padding: 10px 18px 0;
+}
+
+.sheet-header h2 {
   font-size: 17px;
   margin: 0 0 14px;
+}
+
+.sheet-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 18px 8px;
 }
 
 .field-group {
@@ -551,9 +596,13 @@ main {
 }
 
 .sheet-actions {
+  flex-shrink: 0;
   display: flex;
   gap: 8px;
-  margin-top: 6px;
+  padding: 12px 18px calc(16px + var(--safe-bottom));
+  box-shadow: 0 -4px 12px rgba(31, 33, 48, 0.05);
+  position: relative;
+  z-index: 1;
 }
 
 .btn {
