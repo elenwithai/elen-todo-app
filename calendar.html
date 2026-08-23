@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<title>달력 - 나의 할일 리스트</title>
+
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#6366f1" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-title" content="할일리스트" />
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+<link rel="icon" href="icons/favicon-32.png" />
+
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="app-header">
+  <div class="header-row">
+    <h1 class="app-title">📅 달력</h1>
+    <div class="quote-marquee" id="dailyQuoteWrap"></div>
+  </div>
+
+  <div class="sub-tabs" id="calSubTabs">
+    <button class="sub-tab active" data-view="month">월간</button>
+    <button class="sub-tab" data-view="week">주간 (7일 한눈에)</button>
+  </div>
+
+  <div id="monthNavWrap">
+    <div class="week-nav">
+      <button class="nav-btn" id="prevMonthBtn" aria-label="이전 달">‹</button>
+      <div class="week-label" id="monthLabel">
+        <span class="main"></span>
+      </div>
+      <button class="today-pill" id="todayBtn">오늘</button>
+      <button class="nav-btn" id="nextMonthBtn" aria-label="다음 달">›</button>
+    </div>
+  </div>
+
+  <div id="weekAgendaNavWrap" style="display:none;">
+    <div class="week-nav">
+      <button class="nav-btn" id="prevAgendaWeekBtn" aria-label="이전 주">‹</button>
+      <div class="week-label" id="agendaWeekLabel">
+        <span class="main"></span>
+      </div>
+      <button class="today-pill" id="agendaTodayBtn">오늘</button>
+      <button class="nav-btn" id="nextAgendaWeekBtn" aria-label="다음 주">›</button>
+    </div>
+  </div>
+
+  <div class="filter-row" id="filterRow">
+    <label class="filter-check-label">
+      <input type="checkbox" id="hideCompletedChk" />
+      완료된 항목 숨기기
+    </label>
+  </div>
+</header>
+
+<main>
+  <div id="monthViewSection">
+    <div class="cal-grid" id="dowRow"></div>
+    <div class="cal-grid" id="calGrid"></div>
+
+    <div class="section-title" style="margin-top:20px;">범례</div>
+    <div class="empty-state" id="legend" style="text-align:left; padding:16px;"></div>
+  </div>
+
+  <div id="weekAgendaSection" style="display:none;">
+    <div class="week-agenda" id="weekAgendaList"></div>
+  </div>
+</main>
+
+<nav class="bottom-nav">
+  <a href="index.html"><span class="nav-icon">📝</span>할일</a>
+  <a href="calendar.html" class="active"><span class="nav-icon">📅</span>달력</a>
+</nav>
+
+<script src="store.js"></script>
+<script src="quotes.js"></script>
+<script src="calendar.js"></script>
+</body>
+</html>
