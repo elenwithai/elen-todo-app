@@ -430,6 +430,17 @@ main {
   align-items: center;
   height: 23px;
   padding: 0 1px;
+  max-width: 100%;
+  box-sizing: border-box;
+  /* Defensive clip: some Android browsers give the native <input type=date>
+     picker control (the invisible .due-input-overlay below) a UA-imposed
+     minimum width that ignores its position:absolute; inset:0 sizing — this
+     is what was actually causing the page-wide horizontal overflow reported
+     on a real device. overflow:hidden here guarantees that even if the
+     native control still tries to render wider than this small label box,
+     it gets clipped and can never push page layout/scrollWidth again. The
+     input stays clickable across the full visible label area either way. */
+  overflow: hidden;
 }
 
 .due-text {
@@ -452,6 +463,11 @@ main {
 .due-input-overlay {
   position: absolute;
   inset: 0;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
   opacity: 0;
   border: none;
   padding: 0;
@@ -891,6 +907,8 @@ main {
   bottom: 0;
   left: 0;
   right: 0;
+  max-width: 100vw;
+  box-sizing: border-box;
   background: var(--card-bg);
   box-shadow: 0 -2px 10px rgba(31,33,48,0.06);
   display: flex;
@@ -900,6 +918,8 @@ main {
 
 .bottom-nav a {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
   text-align: center;
   text-decoration: none;
   color: var(--text-dim);
