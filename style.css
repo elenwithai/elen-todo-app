@@ -783,6 +783,8 @@ main {
 
 .unscheduled-toggle {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   background: var(--card-bg);
   border: none;
   border-radius: var(--radius-md);
@@ -794,7 +796,16 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  overflow-x: hidden;
   cursor: pointer;
+}
+.unscheduled-toggle-label {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  flex: 1;
+  text-align: left;
 }
 
 .progress-bar-wrap {
@@ -940,6 +951,10 @@ main {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-wrap: wrap;
+  overflow-x: hidden;
+  max-width: 100%;
+  box-sizing: border-box;
   margin-top: 4px;
   padding: 0 2px;
 }
@@ -952,6 +967,9 @@ main {
   color: var(--text-dim);
   cursor: pointer;
   user-select: none;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  min-width: 0;
 }
 .filter-check-label input[type="checkbox"] {
   width: 17px;

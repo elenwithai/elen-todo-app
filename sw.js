@@ -12,7 +12,7 @@
 // correct. Network-first fixes that: every load tries the network first
 // (so a new deploy is visible immediately when online), and only falls
 // back to the cache when offline or the request fails.
-const CACHE_VERSION = "v2";
+const CACHE_VERSION = "v3-debug";
 const CACHE_NAME = "todo-app-cache-" + CACHE_VERSION;
 const ASSETS = [
   "./",
@@ -22,6 +22,7 @@ const ASSETS = [
   "./store.js",
   "./app.js",
   "./calendar.js",
+  "./debug-overflow.js",
   "./manifest.json",
   "./icons/icon-192.png",
   "./icons/icon-512.png",

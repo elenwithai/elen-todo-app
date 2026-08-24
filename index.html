@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>나의 할일 리스트</title>
 <meta name="description" content="매일 할일을 체크하는 나만의 To-do 웹앱" />
 
@@ -59,7 +59,7 @@
 <main>
   <div id="weekViewSection">
     <button class="unscheduled-toggle" id="unscheduledToggle" style="display:none;">
-      <span>📌 날짜 미정 <span id="unscheduledCount"></span></span>
+      <span class="unscheduled-toggle-label">📌 날짜 미정 <span id="unscheduledCount"></span></span>
       <span id="unscheduledArrow">▾</span>
     </button>
     <div class="section-title" id="unscheduledTitle" style="display:none;">
@@ -156,5 +156,9 @@
 <script src="store.js"></script>
 <script src="quotes.js"></script>
 <script src="app.js"></script>
+<!-- TEMPORARY: horizontal-overflow diagnostic overlay. Remove this line
+     and debug-overflow.js once the real-device overflow bug is found
+     and fixed — this is not part of the app. -->
+<script src="debug-overflow.js"></script>
 </body>
 </html>
